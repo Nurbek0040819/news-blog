@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-$n3-d!%4azt+f57q&!63wh=qp*(=b9=vew*=vly$t#st&(u0%@'
 # SECRET_KEY = getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -29,8 +29,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # My apps
     'app_news',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
-
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+CKEDITOR_IMAGE_BACKEND = 'pillow'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -127,6 +130,6 @@ LOGOUT_REDIRECT_URL = '/'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'doniyorovnurbek286@gmail.com'
-EMAIL_HOST_PASSWORD = 'nfpa qxhn dqyu avzy'
+EMAIL_HOST_USER = 'nurbekdoniyorov986@gmail.com'
+EMAIL_HOST_PASSWORD = 'kttc yncz igxx lcze'
 EMAIL_USE_TLS = True

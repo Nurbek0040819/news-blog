@@ -2,74 +2,442 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>
-        {% block title %}
-        	Django auth
-        {% endblock %}
-    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}daily.news{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --accent-gold: #c9a84c;
+            --accent-red: #e63946;
+            --accent-green: #2ec4b6;
+            --text-primary: #f0ece2;
+            --text-muted: #8a8a9a;
+            --glass-bg: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(46,196,182,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(230,57,70,0.04) 0%, transparent 60%);
+            animation: bgPulse 12s ease-in-out infinite alternate;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes bgPulse {
+            0% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1.1) rotate(3deg); }
+        }
+
+        /* NAVBAR */
+        .navbar-custom {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 2rem;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            background: rgba(10,10,15,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .navbar-inner {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .nav-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            transition: color 0.3s;
+            flex-shrink: 0;
+        }
+
+        .nav-brand span { color: var(--accent-gold); }
+        .nav-brand:hover { color: var(--accent-gold); }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            list-style: none;
+            flex: 1;
+        }
+
+        .dropdown-toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .dropdown-toggle-btn:hover {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+        }
+
+        .dropdown-menu-custom {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            padding-top: 8px;
+            min-width: 180px;
+            background: rgba(18,18,26,0.97);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            z-index: 2000;
+        }
+
+        .dropdown-wrapper { position: relative; }
+
+        .dropdown-wrapper:hover .dropdown-menu-custom {
+            display: block;
+            animation: fadeInDown 0.2s ease;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-menu-custom a {
+            display: block;
+            padding: 0.6rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .dropdown-menu-custom a:hover {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            padding-left: 1.25rem;
+        }
+
+        .dropdown-menu-custom hr { border-color: var(--glass-border); margin: 0.35rem 0; }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        /* Buttons */
+        .btn-nav {
+            padding: 0.45rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s;
+            text-decoration: none;
+            border: none;
+            display: inline-block;
+        }
+
+        .btn-nav:hover { transform: translateY(-1px); }
+
+        .btn-teal {
+            background: linear-gradient(135deg, var(--accent-green), #1ea89e);
+            color: #0a0a0f !important;
+        }
+        .btn-teal:hover { box-shadow: 0 4px 20px rgba(46,196,182,0.35); }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--accent-gold), #a8882e);
+            color: #0a0a0f !important;
+        }
+        .btn-gold:hover { box-shadow: 0 4px 20px rgba(201,168,76,0.35); }
+
+        .btn-red {
+            background: linear-gradient(135deg, var(--accent-red), #c1121f);
+            color: #fff !important;
+        }
+        .btn-red:hover { box-shadow: 0 4px 20px rgba(230,57,70,0.35); }
+
+        .btn-purple {
+            background: linear-gradient(135deg, #6c3fc7, #4a1fa8);
+            color: #fff !important;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .btn-purple:hover { box-shadow: 0 4px 20px rgba(108,63,199,0.4); }
+
+        /* User pill dropdown */
+        .user-dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.9rem 0.35rem 0.35rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .user-avatar {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-green));
+            flex-shrink: 0;
+        }
+
+        .user-dropdown-btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--accent-gold);
+        }
+
+        .user-dropdown-menu {
+            min-width: 220px;
+            right: 0;
+            left: auto;
+        }
+
+        .user-dropdown-menu form { padding: 0.25rem 0.5rem 0.5rem; }
+
+        .btn-change-pw {
+            display: block;
+            padding: 0.6rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            margin-bottom: 0.15rem;
+        }
+
+        .btn-change-pw:hover { background: var(--glass-bg); color: var(--text-primary); }
+
+        .btn-logout {
+            width: 100%;
+            padding: 0.6rem;
+            background: rgba(230,57,70,0.12);
+            border: 1px solid rgba(230,57,70,0.25);
+            border-radius: 8px;
+            color: var(--accent-red);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover { background: var(--accent-red); color: white; }
+
+        /* CONTENT */
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+            padding: 2.5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeInUp 0.7s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
+
+        /* NAV SEARCH */
+        .nav-search-form { flex: 1; max-width: 280px; }
+        .nav-search-wrap {
+            display: flex; align-items: center;
+            background: rgba(255,255,255,.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px; overflow: hidden;
+            transition: border-color .25s;
+        }
+        .nav-search-wrap:focus-within { border-color: var(--accent-gold); box-shadow: 0 0 0 2px rgba(201,168,76,.1); }
+        .nav-search-icon { padding: 0 .6rem; color: var(--text-muted); font-size: .9rem; flex-shrink: 0; }
+        .nav-search-input {
+            flex: 1; background: transparent; border: none;
+            padding: .5rem .25rem; color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif; font-size: .85rem; outline: none;
+            min-width: 0;
+        }
+        .nav-search-input::placeholder { color: rgba(138,138,154,.45); }
+        .nav-search-btn {
+            padding: .5rem .75rem;
+            background: linear-gradient(135deg, var(--accent-gold), #a8882e);
+            border: none; color: #0a0a0f;
+            font-weight: 700; font-size: .85rem;
+            cursor: pointer; transition: all .2s; flex-shrink: 0;
+        }
+        .nav-search-btn:hover { opacity: .85; }
+
+        .mobile-toggle {
+            display: none;
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.4rem 0.7rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            /* NAV SEARCH */
+        .nav-search-form { flex: 1; max-width: 280px; }
+        .nav-search-wrap {
+            display: flex; align-items: center;
+            background: rgba(255,255,255,.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px; overflow: hidden;
+            transition: border-color .25s;
+        }
+        .nav-search-wrap:focus-within { border-color: var(--accent-gold); box-shadow: 0 0 0 2px rgba(201,168,76,.1); }
+        .nav-search-icon { padding: 0 .6rem; color: var(--text-muted); font-size: .9rem; flex-shrink: 0; }
+        .nav-search-input {
+            flex: 1; background: transparent; border: none;
+            padding: .5rem .25rem; color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif; font-size: .85rem; outline: none;
+            min-width: 0;
+        }
+        .nav-search-input::placeholder { color: rgba(138,138,154,.45); }
+        .nav-search-btn {
+            padding: .5rem .75rem;
+            background: linear-gradient(135deg, var(--accent-gold), #a8882e);
+            border: none; color: #0a0a0f;
+            font-weight: 700; font-size: .85rem;
+            cursor: pointer; transition: all .2s; flex-shrink: 0;
+        }
+        .nav-search-btn:hover { opacity: .85; }
+
+        .mobile-toggle { display: block; }
+            .nav-links, .nav-right {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                align-items: flex-start;
+                padding: 0.5rem 0;
+                gap: 0.4rem;
+            }
+            .nav-links.open, .nav-right.open { display: flex; }
+            .navbar-custom { flex-wrap: wrap; height: auto; padding: 1rem; }
+            .navbar-inner { flex-wrap: wrap; }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">daily.news</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="collapsibleNavbar">
-      <ul class="navbar-nav">
-{#        <li class="nav-item">#}
-{#          <a class="nav-link" href="#">Link</a>#}
-{#        </li>#}
-{#        <li class="nav-item">#}
-{#          <a class="nav-link" href="#">Link</a>#}
-{#        </li>#}
-{#        <li class="nav-item">#}
-{#          <a class="nav-link" href="#">Link</a>#}
-{#        </li>#}
-          <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">News</a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{% url 'list_news' %}">All news</a></li>
-                  <hr>
-                <li><a class="dropdown-item" href="{% url 'add_news' %}">Add news</a></li>
-              </ul>
-            </li>
 
-      </ul>
-    </div>
-      {% if user.is_superuser %}
-          <a href="{% url 'superuser' %}" class="btn btn-secondary">superuser</a>
-      {% endif %}
-  </div>
+<nav class="navbar-custom">
+    <div class="navbar-inner">
+        <a class="nav-brand" href="/">daily<span>.</span>news</a>
+
+        <button class="mobile-toggle" onclick="document.getElementById('navLinks').classList.toggle('open');document.getElementById('navRight').classList.toggle('open')">☰</button>
+
+        <ul class="nav-links" id="navLinks">
+            <li class="dropdown-wrapper">
+                <button class="dropdown-toggle-btn">News ▾</button>
+                <div class="dropdown-menu-custom">
+                    <a href="{% url 'list_news' %}">📰 All news</a>
+                    <hr>
+                    <a href="{% url 'add_news' %}">✏️ Add news</a>
+                </div>
+            </li>
+        </ul>
+
+        <form method="get" action="{% url 'list_news' %}" class="nav-search-form">
+            <div class="nav-search-wrap">
+                <span class="nav-search-icon">🔍</span>
+                <input type="text" name="q" placeholder="Qidirish..." class="nav-search-input" autocomplete="off">
+                <button type="submit" class="nav-search-btn">→</button>
+            </div>
+        </form>
+
+        <div class="nav-right" id="navRight">
+            {% if user.is_superuser %}
+                <a href="{% url 'superuser' %}" class="btn-nav btn-purple">⚡ Superuser</a>
+            {% endif %}
+
             {% if user.is_authenticated %}
-    	<div class="dropdown" style="text-align: right;">
-          <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
-            {{ user.username }}
-          </button>
-          <ul class="dropdown-menu">
-{#          <li><a class="dropdown-item" href="{% url 'mail' %}">Check mail</a></li>#}
-            <li><a class="btn btn-warning" href="{% url 'password_change' %}">Password change</a></li>
-            <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-info">logout</button>
-            </form>
-          </ul>
+                <div class="dropdown-wrapper">
+                    <button class="user-dropdown-btn">
+                        <span class="user-avatar"></span>
+                        {{ user.username }} ▾
+                    </button>
+                    <div class="dropdown-menu-custom user-dropdown-menu">
+                        <a href="{% url 'password_change' %}" class="btn-change-pw">🔑 Change password</a>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-logout">↩ Logout</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn-nav btn-teal">Login</a>
+                <a href="{% url 'register' %}" class="btn-nav btn-gold">Register</a>
+                <a href="{% url 'password_reset' %}" class="btn-nav btn-red">Forgot password</a>
+            {% endif %}
         </div>
-    {% else %}
-        <a href="{% url 'login' %}" class="btn btn-success">Login</a> |
-        <a href="{% url 'register' %}" class="btn btn-success">Register</a> |
-        <a href="{% url 'password_reset' %}" class="btn btn-danger">Forgot password</a>
-    {% endif %}
+    </div>
 </nav>
 
-    {% block content %}
+<div class="content-wrapper">
+    {% block content %}{% endblock %}
+</div>
 
-    {% endblock %}
-
-
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

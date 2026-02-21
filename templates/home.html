@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% block title %}daily.news — Bosh sahifa{% endblock %}
+
+{% block content %}
+<style>
+/* HERO */
+.hero {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 5rem 1rem 4rem;
+    position: relative;
+}
+.hero-label {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .35rem 1rem;
+    background: rgba(201,168,76,.1);
+    border: 1px solid rgba(201,168,76,.25);
+    border-radius: 40px; color: var(--accent-gold);
+    font-size: .75rem; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+    margin-bottom: 1.75rem;
+    animation: fadeInUp .6s ease both;
+}
+.hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900; line-height: 1.05;
+    color: var(--text-primary); margin-bottom: 1.5rem;
+    animation: fadeInUp .6s .1s ease both;
+}
+.hero h1 .gold { color: var(--accent-gold); }
+.hero h1 .outline {
+    -webkit-text-stroke: 2px var(--accent-gold);
+    color: transparent;
+}
+.hero p {
+    color: var(--text-muted); font-size: 1.1rem;
+    max-width: 520px; line-height: 1.75;
+    margin-bottom: 2.5rem;
+    animation: fadeInUp .6s .2s ease both;
+}
+.hero-btns {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeInUp .6s .3s ease both;
+}
+.btn-hero {
+    padding: .8rem 2rem; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    text-decoration: none; transition: all .3s;
+    border: none; cursor: pointer; display: inline-block;
+}
+.btn-hero-primary {
+    background: linear-gradient(135deg, var(--accent-gold), #a8882e);
+    color: #0a0a0f;
+}
+.btn-hero-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(201,168,76,.4);
+    color: #0a0a0f;
+}
+.btn-hero-secondary {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+}
+.btn-hero-secondary:hover {
+    background: rgba(255,255,255,.1);
+    transform: translateY(-3px);
+    color: var(--text-primary);
+}
+
+/* STATS BAR */
+.stats-bar {
+    display: flex; justify-content: center;
+    gap: 3rem; flex-wrap: wrap;
+    padding: 2rem 1rem 3rem;
+    border-top: 1px solid var(--glass-border);
+    animation: fadeInUp .6s .4s ease both;
+}
+.stat-item { text-align: center; }
+.stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 900;
+    color: var(--text-primary); display: block;
+}
+.stat-number span { color: var(--accent-gold); }
+.stat-label { color: var(--text-muted); font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+
+/* FEATURES */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem; margin-bottom: 4rem;
+    animation: fadeInUp .6s .5s ease both;
+}
+.feature-card {
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px; padding: 1.75rem;
+    transition: all .3s; position: relative; overflow: hidden;
+}
+.feature-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    opacity: 0; transition: opacity .3s;
+}
+.feature-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent-gold), transparent); }
+.feature-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent-green), transparent); }
+.feature-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent-red), transparent); }
+.feature-card:nth-child(4)::before { background: linear-gradient(90deg, #6c3fc7, transparent); }
+.feature-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,.15); }
+.feature-card:hover::before { opacity: 1; }
+.feature-icon { font-size: 2.2rem; margin-bottom: 1rem; display: block; }
+.feature-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; font-weight: 700;
+    color: var(--text-primary); margin-bottom: .5rem;
+}
+.feature-desc { color: var(--text-muted); font-size: .875rem; line-height: 1.65; }
+
+/* CTA */
+.cta-section {
+    text-align: center; padding: 3rem 1rem;
+    background: rgba(255,255,255,.02);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px; margin-bottom: 2rem;
+    position: relative; overflow: hidden;
+    animation: fadeInUp .6s .6s ease both;
+}
+.cta-section::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+}
+.cta-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 900; color: var(--text-primary); margin-bottom: .75rem;
+}
+.cta-section h2 span { color: var(--accent-gold); }
+.cta-section p { color: var(--text-muted); margin-bottom: 2rem; font-size: .95rem; }
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-label">🗞️ Yangiliklar platformasi</div>
+    <h1>
+        Har kuni yangi<br>
+        <span class="gold">xabarlar</span> & <span class="outline">tahlillar</span>
+    </h1>
+    <p>O'zbekiston va dunyo bo'ylab eng so'nggi yangiliklar, tahlillar va voqealar — bir joyda.</p>
+    <div class="hero-btns">
+        <a href="{% url 'list_news' %}" class="btn-hero btn-hero-primary">📰 Yangiliklar →</a>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'register' %}" class="btn-hero btn-hero-secondary">Ro'yxatdan o'tish</a>
+        {% else %}
+            <a href="{% url 'add_news' %}" class="btn-hero btn-hero-secondary">✏️ Yangilik qo'shish</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+    <div class="stat-item">
+        <span class="stat-number">24<span>/</span>7</span>
+        <span class="stat-label">Yangiliklar</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-number">100<span>+</span></span>
+        <span class="stat-label">Maqolalar</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-number">5<span>+</span></span>
+        <span class="stat-label">Kategoriyalar</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-number">∞</span>
+        <span class="stat-label">Imkoniyatlar</span>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<div class="features">
+    <div class="feature-card">
+        <span class="feature-icon">⚡</span>
+        <div class="feature-title">Tezkor yangiliklar</div>
+        <p class="feature-desc">Eng so'nggi voqealarni birinchilar qatorida bilib oling.</p>
+    </div>
+    <div class="feature-card">
+        <span class="feature-icon">🌍</span>
+        <div class="feature-title">Dunyo xabarlari</div>
+        <p class="feature-desc">O'zbekiston va xorijdan muhim yangiliklar.</p>
+    </div>
+    <div class="feature-card">
+        <span class="feature-icon">✏️</span>
+        <div class="feature-title">O'z maqolangiz</div>
+        <p class="feature-desc">Ro'yxatdan o'ting va o'z yangiligingizni yozing.</p>
+    </div>
+    <div class="feature-card">
+        <span class="feature-icon">🔖</span>
+        <div class="feature-title">Kategoriyalar</div>
+        <p class="feature-desc">Sport, siyosat, texnologiya va boshqa ko'plab mavzular.</p>
+    </div>
+</div>
+
+<!-- CTA -->
+{% if not user.is_authenticated %}
+<div class="cta-section">
+    <h2>Bugun <span>boshlang</span></h2>
+    <p>Ro'yxatdan o'ting va yangiliklar dunyosiga qo'shiling</p>
+    <div class="hero-btns">
+        <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">Bepul ro'yxatdan o'tish →</a>
+        <a href="{% url 'login' %}" class="btn-hero btn-hero-secondary">Kirish</a>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,27 +1,210 @@
 {% extends 'base.html' %}
 
-{% block title %}
-	Superuser form
-{% endblock %}
+{% block title %}Superuser Panel — daily.news{% endblock %}
 
 {% block content %}
-	<form action="" method="post">
-{% csrf_token %}
-<fieldset>
-    <legend>Send message form</legend>
-    <p>
-        <label for="email">Where:</label>
-        <input type="email" name="email" class="form-control" id="email">
-    </p>
-    <p>
-        <label for="subject">Subject:</label>
-        <input type="text" name="subject" class="form-control" id="subject">
-    </p>
-    <p>
-        <label for="message">text:</label>
-        <textarea name="message" class="form-control"></textarea>
-    </p>
-    <input type="submit" value="Send message" class="form-control btn btn-success">
-</fieldset>
-</form>
+<style>
+    .superuser-page {
+        max-width: 640px;
+        margin: 0 auto;
+        padding-top: 1rem;
+    }
+
+    .page-header {
+        margin-bottom: 2.5rem;
+        animation: fadeInUp 0.5s ease both;
+    }
+
+    .page-header .badge-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.3rem 0.8rem;
+        background: rgba(108,63,199,0.15);
+        border: 1px solid rgba(108,63,199,0.3);
+        border-radius: 40px;
+        color: #a78bfa;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    .page-header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        font-weight: 900;
+        color: var(--text-primary);
+        line-height: 1.1;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header h1 span { color: var(--accent-gold); }
+
+    .page-header p {
+        color: var(--text-muted);
+        font-size: 0.925rem;
+    }
+
+    /* Card */
+    .form-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s 0.15s ease both;
+    }
+
+    .form-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #6c3fc7, var(--accent-gold), var(--accent-green));
+        border-radius: 2px 2px 0 0;
+    }
+
+    /* Form elements */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label-custom {
+        display: block;
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input-custom,
+    .form-textarea-custom {
+        width: 100%;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--glass-border);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        color: var(--text-primary);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        transition: all 0.25s;
+        outline: none;
+    }
+
+    .form-input-custom::placeholder,
+    .form-textarea-custom::placeholder {
+        color: rgba(138,138,154,0.5);
+    }
+
+    .form-input-custom:focus,
+    .form-textarea-custom:focus {
+        border-color: var(--accent-gold);
+        background: rgba(201,168,76,0.05);
+        box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+    }
+
+    .form-textarea-custom {
+        min-height: 140px;
+        resize: vertical;
+    }
+
+    /* Submit */
+    .btn-submit {
+        width: 100%;
+        padding: 0.85rem;
+        background: linear-gradient(135deg, #6c3fc7, #4a1fa8);
+        border: none;
+        border-radius: 10px;
+        color: #fff;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-submit::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(108,63,199,0.5);
+    }
+
+    .btn-submit:hover::after { opacity: 1; }
+    .btn-submit:active { transform: translateY(0); }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="superuser-page">
+    <div class="page-header">
+        <div class="badge-label">⚡ Superuser Panel</div>
+        <h1>Send <span>Message</span></h1>
+        <p>Broadcast a message to any email address directly.</p>
+    </div>
+
+    <div class="form-card">
+        <form action="" method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label-custom" for="email">📧 Recipient Email</label>
+                <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    class="form-input-custom"
+                    placeholder="user@example.com"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="subject">📌 Subject</label>
+                <input
+                    type="text"
+                    name="subject"
+                    id="subject"
+                    class="form-input-custom"
+                    placeholder="Enter subject..."
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="message">💬 Message</label>
+                <textarea
+                    name="message"
+                    id="message"
+                    class="form-textarea-custom"
+                    placeholder="Write your message here..."
+                    required
+                ></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                ✉️ &nbsp; Send Message
+            </button>
+        </form>
+    </div>
+</div>
 {% endblock %}

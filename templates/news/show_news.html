@@ -1,19 +1,140 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}
-	{{ news.news_title }}
-{% endblock %}
+{% block title %}{{ object.news_title }} — daily.news{% endblock %}
 
 {% block content %}
-	<h1>{{ news.news_title }}</h1>
-    <img src="{% static news.news_image %}" alt="" width="400" style="float:right;">
-    <p>
-        {{ news.news_content }}
-    </p>
-    <p>Author: {{ news.news_author }}</p>
-    <p>Category: {{ news.news_category }}</p>
-{% if user.is_authenticated %}
-    <p><a href="{% url 'update_news' news.pk %}" class="btn btn-success">Update news</a></p>
-    <p><a href="{% url 'delete_news' news.pk %}" class="btn btn-danger">Delete news</a></p>
-{% endif %}
+<style>
+.article-page { max-width:900px;margin:0 auto; }
+.article-back { display:inline-flex;align-items:center;gap:.4rem;color:var(--text-muted);text-decoration:none;font-size:.85rem;margin-bottom:2.5rem;padding:.4rem .9rem;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:40px;transition:all .2s; }
+.article-back:hover { color:var(--accent-gold);border-color:rgba(201,168,76,.3); }
+.article-meta { display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;animation:fadeInUp .5s ease both; }
+.meta-category { padding:.3rem .85rem;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);border-radius:40px;color:var(--accent-gold);font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase; }
+.meta-dot { color:var(--glass-border); }
+.meta-author { display:flex;align-items:center;gap:.5rem;color:var(--text-muted);font-size:.875rem; }
+.meta-author-avatar { width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--accent-gold),var(--accent-green));display:inline-block;flex-shrink:0; }
+.article-title { font-family:'Playfair Display',serif;font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;color:var(--text-primary);line-height:1.15;margin-bottom:2rem;animation:fadeInUp .5s .1s ease both; }
+.article-hero-img { width:100%;max-height:500px;object-fit:cover;border-radius:20px;margin-bottom:2.5rem;border:1px solid var(--glass-border);animation:fadeInUp .5s .15s ease both; }
+
+.article-body { background:rgba(255,255,255,.02);border:1px solid var(--glass-border);border-radius:20px;padding:2.5rem;position:relative;overflow:hidden;margin-bottom:2rem;animation:fadeInUp .5s .2s ease both; }
+.article-body::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent-gold),transparent); }
+.article-content { font-size:1.05rem;line-height:1.9;color:rgba(240,236,226,.88); }
+.article-content::first-letter { font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;color:var(--accent-gold);float:left;line-height:.8;margin:.05em .15em 0 0; }
+
+.article-footer { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;padding-top:1.5rem;border-top:1px solid var(--glass-border);margin-top:1.5rem; }
+.article-footer-info { display:flex;flex-direction:column;gap:.3rem; }
+.footer-label { color:var(--text-muted);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase; }
+.footer-value { color:var(--text-primary);font-size:.9rem;font-weight:600; }
+
+/* LIKE/DISLIKE */
+.reactions { display:flex;align-items:center;gap:.75rem;margin-bottom:2rem;animation:fadeInUp .5s .25s ease both; }
+.reaction-btn {
+    display:inline-flex;align-items:center;gap:.5rem;
+    padding:.6rem 1.3rem;border-radius:40px;
+    font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;
+    cursor:pointer;transition:all .3s;border:1px solid var(--glass-border);
+    background:var(--glass-bg);color:var(--text-muted);
+}
+.reaction-btn:hover { transform:translateY(-2px); }
+.reaction-btn.liked { background:rgba(46,196,182,.15);border-color:rgba(46,196,182,.4);color:var(--accent-green); }
+.reaction-btn.disliked { background:rgba(230,57,70,.15);border-color:rgba(230,57,70,.4);color:var(--accent-red); }
+.reaction-btn .count { font-size:.85rem;font-weight:700; }
+.reaction-login-hint { color:var(--text-muted);font-size:.8rem; }
+
+/* SHARE */
+.share-bar { display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:2rem;animation:fadeInUp .5s .3s ease both; }
+.share-label { color:var(--text-muted);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase; }
+.share-btn { padding:.4rem 1rem;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:8px;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:.8rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem; }
+.share-btn:hover { background:rgba(255,255,255,.1);color:var(--text-primary);transform:translateY(-1px); }
+
+.article-actions { display:flex;gap:.75rem;flex-wrap:wrap;animation:fadeInUp .5s .35s ease both; }
+.btn-action { display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.4rem;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:700;text-decoration:none;cursor:pointer;transition:all .3s; }
+.btn-edit { background:linear-gradient(135deg,var(--accent-green),#1ea89e);color:#0a0a0f; }
+.btn-edit:hover { box-shadow:0 8px 25px rgba(46,196,182,.4);transform:translateY(-2px);color:#0a0a0f; }
+.btn-del { background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3) !important;color:var(--accent-red); }
+.btn-del:hover { background:var(--accent-red);color:#fff;transform:translateY(-2px);box-shadow:0 8px 25px rgba(230,57,70,.3); }
+.btn-back-bottom { background:var(--glass-bg);border:1px solid var(--glass-border) !important;color:var(--text-muted); }
+.btn-back-bottom:hover { background:rgba(255,255,255,.1);color:var(--text-primary);transform:translateY(-2px); }
+
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+</style>
+
+<div class="article-page">
+    <a href="{% url 'list_news' %}" class="article-back">← Barcha yangiliklarga qaytish</a>
+
+    <div class="article-meta">
+        {% if object.news_category %}<span class="meta-category">{{ object.news_category }}</span><span class="meta-dot">•</span>{% endif %}
+        {% if object.news_author %}<span class="meta-author"><span class="meta-author-avatar"></span>{{ object.news_author }}</span>{% endif %}
+        {% if object.news_pub_date %}<span class="meta-dot">•</span><span style="color:var(--text-muted);font-size:.85rem;">{{ object.news_pub_date|date:"d M, Y" }}</span>{% endif %}
+    </div>
+
+    <h1 class="article-title">{{ object.news_title }}</h1>
+
+    {% if object.news_image %}
+        <img src="{{ object.news_image.url }}" alt="{{ object.news_title }}" class="article-hero-img">
+    {% endif %}
+
+    <!-- LIKE / DISLIKE -->
+    <div class="reactions">
+        {% if user.is_authenticated %}
+            <button class="reaction-btn {% if user_liked %}liked{% endif %}" id="like-btn" onclick="reactNews('like')">
+                👍 <span id="like-count" style="font-weight:700;font-size:.9rem;">{{ object.total_likes }}</span>
+            </button>
+            <button class="reaction-btn {% if user_disliked %}disliked{% endif %}" id="dislike-btn" onclick="reactNews('dislike')">
+                👎 <span id="dislike-count" style="font-weight:700;font-size:.9rem;">{{ object.total_dislikes }}</span>
+            </button>
+        {% else %}
+            <span class="reaction-btn">👍 <strong>{{ object.total_likes }}</strong></span>
+            <span class="reaction-btn">👎 <strong>{{ object.total_dislikes }}</strong></span>
+            <span class="reaction-login-hint">— <a href="{% url 'login' %}" style="color:var(--accent-gold)">Kirish</a> kerak</span>
+        {% endif %}
+    </div>
+
+    <!-- SHARE -->
+    <div class="share-bar">
+        <span class="share-label">Ulashish:</span>
+        <button class="share-btn" onclick="navigator.clipboard.writeText(window.location.href);this.textContent='✓ Nusxalandi!';setTimeout(()=>this.textContent='🔗 Havola',2000)">🔗 Havola</button>
+        <a class="share-btn" href="https://t.me/share/url?url={{ request.build_absolute_uri }}" target="_blank">✈️ Telegram</a>
+        <a class="share-btn" href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ object.news_title }}" target="_blank">🐦 Twitter</a>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="article-body">
+        <div class="article-content">{{ object.news_content|safe }}</div>
+        <div class="article-footer">
+            <div class="article-footer-info"><span class="footer-label">Muallif</span><span class="footer-value">{{ object.news_author }}</span></div>
+            {% if object.news_category %}<div class="article-footer-info"><span class="footer-label">Kategoriya</span><span class="footer-value">{{ object.news_category }}</span></div>{% endif %}
+            {% if object.news_pub_date %}<div class="article-footer-info"><span class="footer-label">Sana</span><span class="footer-value">{{ object.news_pub_date|date:"d M Y, H:i" }}</span></div>{% endif %}
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="article-actions">
+        <a href="{% url 'list_news' %}" class="btn-action btn-back-bottom">← Orqaga</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'update_news' object.pk %}" class="btn-action btn-edit">✏️ Tahrirlash</a>
+            <a href="{% url 'delete_news' object.pk %}" class="btn-action btn-del">🗑 O'chirish</a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function reactNews(type) {
+    fetch(`/news/{{ object.pk }}/${type}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('like-count').textContent = data.likes;
+        document.getElementById('dislike-count').textContent = data.dislikes;
+
+        const likeBtn = document.getElementById('like-btn');
+        const dislikeBtn = document.getElementById('dislike-btn');
+
+        likeBtn.className = 'reaction-btn' + (data.liked ? ' liked' : '');
+        dislikeBtn.className = 'reaction-btn' + (data.disliked ? ' disliked' : '');
+    })
+    .catch(err => console.error('Xato:', err));
+}
+</script>
 {% endblock %}

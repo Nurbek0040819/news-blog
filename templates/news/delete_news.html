@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Update News
+    Delete News
 {% endblock %}
 
 {% block content %}
-    <h2>Update News</h2>
+    <h2>Delete News</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="submit" class="btn btn-primary">Delete</button>
         <a href="{% url 'list_news' %}" class="btn btn-danger">Cancel</a>
     </form>
 {% endblock %}

@@ -1,13 +1,184 @@
 {% extends 'base.html' %}
-{% block title %}
-	Login page
-{% endblock %}
+{% block title %}Kirish — daily.news{% endblock %}
 
 {% block content %}
-	<h1>Log in to system</h1>
-    <form action="" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Log in" class="btn btn-success">
-    </form>
+<style>
+.auth-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem; align-items: center;
+    max-width: 960px; margin: 2rem auto;
+    padding: 0 1rem;
+}
+@media(max-width:768px){ .auth-wrap{grid-template-columns:1fr; gap:2rem;} .auth-left{display:none;} }
+
+.auth-left .big-label {
+    display: inline-block; padding: .3rem .9rem;
+    background: rgba(46,196,182,.12); border: 1px solid rgba(46,196,182,.25);
+    border-radius: 40px; color: var(--accent-green);
+    font-size: .72rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1.5rem;
+}
+.auth-left h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem,3.5vw,3rem); font-weight: 900;
+    color: var(--text-primary); line-height: 1.15; margin-bottom: 1rem;
+}
+.auth-left h2 span { color: var(--accent-green); }
+.auth-left p { color: var(--text-muted); font-size: .95rem; line-height: 1.7; margin-bottom: 2rem; }
+
+.perks { display: flex; flex-direction: column; gap: .75rem; }
+.perk-item {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .75rem 1rem;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    font-size: .875rem; color: var(--text-muted); transition: all .2s;
+}
+.perk-item:hover { border-color: rgba(46,196,182,.2); color: var(--text-primary); }
+.perk-icon { font-size: 1.2rem; flex-shrink: 0; }
+
+/* CARD */
+.auth-card {
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px; padding: 2.25rem;
+    position: relative; overflow: hidden;
+    animation: fadeInUp .6s ease both;
+}
+.auth-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent-gold), var(--accent-green));
+    background-size: 200%;
+    animation: shimmer 3s linear infinite;
+}
+@keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+
+.auth-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 900;
+    color: var(--text-primary); margin-bottom: .35rem;
+}
+.auth-card-sub { color: var(--text-muted); font-size: .875rem; margin-bottom: 1.75rem; }
+
+.form-fields { display: flex; flex-direction: column; gap: 1.1rem; margin-bottom: 1.5rem; }
+.field-wrap { display: flex; flex-direction: column; gap: .4rem; }
+.field-wrap label {
+    color: var(--text-muted);
+    font-size: .72rem; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase;
+}
+.field-wrap input {
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px; padding: .75rem 1rem;
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif; font-size: .95rem;
+    outline: none; transition: all .25s; width: 100%;
+}
+.field-wrap input:focus {
+    border-color: var(--accent-green);
+    background: rgba(46,196,182,.05);
+    box-shadow: 0 0 0 3px rgba(46,196,182,.1);
+}
+.field-wrap input::placeholder { color: rgba(138,138,154,.45); }
+
+.errorlist {
+    list-style: none; padding: .6rem 1rem;
+    background: rgba(230,57,70,.1);
+    border: 1px solid rgba(230,57,70,.25);
+    border-radius: 8px; margin-bottom: 1rem;
+}
+.errorlist li { color: var(--accent-red); font-size: .82rem; }
+
+.form-bottom {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 1.5rem;
+    flex-wrap: wrap; gap: .5rem;
+}
+.forgot-link { color: var(--text-muted); font-size: .82rem; text-decoration: none; transition: color .2s; }
+.forgot-link:hover { color: var(--accent-gold); }
+
+.btn-login {
+    width: 100%; padding: .9rem;
+    background: linear-gradient(135deg, var(--accent-green), #1ea89e);
+    border: none; border-radius: 12px;
+    color: #0a0a0f; font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    cursor: pointer; transition: all .3s;
+}
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 35px rgba(46,196,182,.4);
+}
+.btn-login:active { transform: translateY(0); }
+
+.auth-footer {
+    text-align: center; margin-top: 1.25rem;
+    color: var(--text-muted); font-size: .875rem;
+}
+.auth-footer a { color: var(--accent-gold); text-decoration: none; font-weight: 600; }
+.auth-footer a:hover { text-decoration: underline; }
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="auth-wrap">
+    <!-- LEFT -->
+    <div class="auth-left">
+        <span class="big-label">👋 Xush kelibsiz</span>
+        <h2>Qaytib <span>keldingiz</span></h2>
+        <p>Hisobingizga kiring va yangiliklar dunyosiga qayting. Har kuni yangi maqolalar sizi kutmoqda.</p>
+        <div class="perks">
+            <div class="perk-item"><span class="perk-icon">📰</span> Barcha yangiliklarga kirish</div>
+            <div class="perk-item"><span class="perk-icon">✏️</span> Maqola qo'shish va tahrirlash</div>
+            <div class="perk-item"><span class="perk-icon">🔔</span> So'nggi voqealardan xabardor bo'ling</div>
+            <div class="perk-item"><span class="perk-icon">⚡</span> Tez va qulay interfeys</div>
+        </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="auth-card">
+        <div class="auth-card-title">Kirish</div>
+        <div class="auth-card-sub">Foydalanuvchi nomi va parolingizni kiriting</div>
+
+        {% if form.errors %}
+            <ul class="errorlist">
+                <li>Foydalanuvchi nomi yoki parol noto'g'ri.</li>
+            </ul>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-fields">
+                <div class="field-wrap">
+                    <label for="id_username">👤 Foydalanuvchi nomi</label>
+                    <input type="text" name="username" id="id_username"
+                           placeholder="username" autocomplete="username" autofocus required>
+                </div>
+                <div class="field-wrap">
+                    <label for="id_password">🔒 Parol</label>
+                    <input type="password" name="password" id="id_password"
+                           placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+            </div>
+
+            <div class="form-bottom">
+                <a href="{% url 'password_reset' %}" class="forgot-link">Parolni unutdingizmi?</a>
+            </div>
+
+            <button type="submit" class="btn-login">→ Kirish</button>
+            <input type="hidden" name="next" value="{{ next }}">
+        </form>
+
+        <div class="auth-footer">
+            Hisobingiz yo'qmi? <a href="{% url 'register' %}">Ro'yxatdan o'tish</a>
+        </div>
+    </div>
+</div>
 {% endblock %}
