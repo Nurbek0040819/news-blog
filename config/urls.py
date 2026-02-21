@@ -14,4 +14,7 @@ urlpatterns = [
     path('news/', include('app_news.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

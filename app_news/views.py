@@ -2,6 +2,7 @@ from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.core.mail import send_mail
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -140,7 +141,7 @@ def superuser_view(request):
                     send_mail(
                         subject=request.POST['subject'],
                         message=request.POST['message'],
-                        from_email="doniyorovnurbek286@gmail.com",
+                        from_email=settings.EMAIL_HOST_USER or None,
                         recipient_list=[email]
                     )
                 return HttpResponse("Successfully sent email to all users")
